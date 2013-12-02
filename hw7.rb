@@ -117,6 +117,10 @@ class Point < GeometryValue
     @x = x
     @y = y
   end
+  
+  def preprocess_prog
+    self
+  end
 end
 
 class Line < GeometryValue
@@ -127,6 +131,10 @@ class Line < GeometryValue
     @m = m
     @b = b
   end
+  
+  def preprocess_prog
+    self
+  end
 end
 
 class VerticalLine < GeometryValue
@@ -135,6 +143,10 @@ class VerticalLine < GeometryValue
   attr_reader :x
   def initialize x
     @x = x
+  end
+  
+  def preprocess_prog
+    self
   end
 end
 
@@ -150,6 +162,28 @@ class LineSegment < GeometryValue
     @y1 = y1
     @x2 = x2
     @y2 = y2
+  end
+  
+  private
+  def comp(v1,v2,if_true) # helper function for preprocess_prog
+    if v1 < v2
+      if_true
+    else 
+      LineSegment.new(@x2,@y2,@x1,@y1)  
+    end
+  end
+  
+  public
+  def preprocess_prog
+    close_x = real_close(@x1,@x2) 
+    close y = real_close(@y1,@y2)
+    case [close_x, close_y]
+     when [true, true] then Point.new(@x1,@y1)
+     when [true, false] then comp(@y1,@y2,self)
+     when [false,false] then comp(@x1,@x2,comp(@y1,@y2,self))
+     when [false,true] then comp(@x1,@x2,comp(@y1,@y2,self))
+     end
+       
   end
 end
 
@@ -173,6 +207,10 @@ class Let < GeometryExpression
     @e1 = e1
     @e2 = e2
   end
+  
+  def preprocess_prog
+    eval_prog(self,[]).preprocess_prog  # not sure if I will need self here
+  end
 end
 
 class Var < GeometryExpression
@@ -186,6 +224,11 @@ class Var < GeometryExpression
     raise "undefined variable" if pr.nil?
     pr[1]
   end
+  
+  def preprocess_prog
+    self
+  end
+    
 end
 
 class Shift < GeometryExpression
@@ -196,4 +239,10 @@ class Shift < GeometryExpression
     @dy = dy
     @e = e
   end
+  
+  def preprocess_prog
+    eval_prog(self,[]).preprocess_prog
+  end
+  
+  
 end
