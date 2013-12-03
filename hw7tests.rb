@@ -61,7 +61,6 @@ if not (b1.m == THREE and b1.b == ONE)
 	puts "Line shift not working properly"
 end
 
-=begin
 b2 = b.intersect(Line.new(THREE,FIVE))
 if not (((b2.is_a? Line)) and b2.m == THREE and b2.b == FIVE)
 	puts "Line intersect not working properly"
@@ -70,7 +69,6 @@ b3 = b.intersect(Line.new(THREE,FOUR))
 if not ((b3.is_a? NoPoints))
 	puts "Line intersect not working properly"
 end
-=end
 
 #VerticalLine Tests
 c = VerticalLine.new(THREE)
@@ -88,8 +86,6 @@ c1 = c.shift(THREE,FIVE)
 if not (c1.x == SIX)
 	puts "VerticalLine shift not working properly"
 end
-
-=begin
 c2 = c.intersect(VerticalLine.new(THREE))
 if not ((c2.is_a? VerticalLine) and c2.x == THREE )
 	puts "VerticalLine intersect not working properly"
@@ -98,8 +94,6 @@ c3 = c.intersect(VerticalLine.new(FOUR))
 if not ((c3.is_a? NoPoints))
 	puts "VerticalLine intersect not working properly"
 end
-=end
-
 #LineSegment Tests
 d = LineSegment.new(ONE,TWO,-THREE,-FOUR)
 if not (d.eval_prog([]) == d)
@@ -111,19 +105,15 @@ if not ((d2.is_a? Point)and d2.x == ONE and d2.y == TWO)
 	puts "LineSegment preprocess_prog should convert to a Point"
 	puts "if ends of segment are real_close"
 end
-
 d = d.preprocess_prog
 if not (d.x1 == -THREE and d.y1 == -FOUR and d.x2 == ONE and d.y2 == TWO)
 	puts "LineSegment preprocess_prog should make x1 and y1"
 	puts "on the left of x2 and y2"
 end
-
 d3 = d.shift(THREE,FIVE)
 if not (d3.x1 == ZERO and d3.y1 == ONE and d3.x2 == FOUR and d3.y2 == SEVEN)
 	puts "LineSegment shift not working properly"
 end
-
-=begin
 d4 = d.intersect(LineSegment.new(-THREE,-FOUR,ONE,TWO))
 if not (((d4.is_a? LineSegment)) and d4.x1 == -THREE and d4.y1 == -FOUR and d4.x2 == ONE and d4.y2 == TWO)	
 	puts "LineSegment intersect not working properly"
@@ -139,7 +129,6 @@ i1 = i.preprocess_prog.eval_prog([])
 if not (i1.x1 == -ONE and i1.y1 == -TWO and i1.x2 == THREE and i1.y2 == FOUR)
 	puts "Intersect eval_prog should return the intersect between e1 and e2"
 end
-=end
 
 #Var Tests
 v = Var.new("a")
@@ -151,7 +140,7 @@ if not (v1.preprocess_prog == v1)
 	puts "Var preprocess_prog should return self"
 end
 
-=begin
+
 #Let Tests
 l = Let.new("a", LineSegment.new(-ONE,-TWO,THREE,FOUR),
              Intersect.new(Var.new("a"),LineSegment.new(THREE,FOUR,-ONE,-TWO)))
@@ -159,9 +148,7 @@ l1 = l.preprocess_prog.eval_prog([])
 if not (l1.x1 == -ONE and l1.y1 == -TWO and l1.x2 == THREE and l1.y2 == FOUR)
 	puts "Let eval_prog should evaluate e2 after adding [s, e1] to the environment"
 end
-=end
 
-=begin
 #Let Variable Shadowing Test
 l2 = Let.new("a", LineSegment.new(-ONE, -TWO, THREE, FOUR),
               Let.new("b", LineSegment.new(THREE,FOUR,-ONE,-TWO), Intersect.new(Var.new("a"),Var.new("b"))))
@@ -169,7 +156,6 @@ l2 = l2.preprocess_prog.eval_prog([["a",Point.new(0,0)]])
 if not (l2.x1 == -ONE and l2.y1 == -TWO and l2.x2 == THREE and l2.y2 == FOUR)
 	puts "Let eval_prog should evaluate e2 after adding [s, e1] to the environment"
 end
-=end
 
 #Shift Tests
 s = Shift.new(THREE,FIVE,LineSegment.new(-ONE,-TWO,THREE,FOUR))
