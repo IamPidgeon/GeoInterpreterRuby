@@ -103,6 +103,9 @@ class NoPoints < GeometryValue
   def intersectWithSegmentAsLineResult seg
     self
   end
+  def shift(dx,dy)
+    self
+  end
 end
 
 
@@ -117,9 +120,14 @@ class Point < GeometryValue
     @x = x
     @y = y
   end
-  
   def preprocess_prog
     self
+  end
+  def eval_prog env 
+    self
+  end
+  def shift(dx,dy)
+    Point.new(@x+dx, @y+dy)
   end
 end
 
@@ -131,9 +139,14 @@ class Line < GeometryValue
     @m = m
     @b = b
   end
-  
   def preprocess_prog
     self
+  end
+  def eval_prog env 
+    self
+  end
+  def shift(dx,dy)
+    Line.new(@m, @b + dy - (@m * dx))
   end
 end
 
@@ -144,9 +157,14 @@ class VerticalLine < GeometryValue
   def initialize x
     @x = x
   end
-  
   def preprocess_prog
     self
+  end
+  def eval_prog env 
+    self
+  end
+  def shift(dx,dy)
+    VerticalLine.new(@x+dx)
   end
 end
 
@@ -163,7 +181,6 @@ class LineSegment < GeometryValue
     @x2 = x2
     @y2 = y2
   end
-  
   private
   def comp(v1,v2,if_true) # helper function for preprocess_prog
     if v1 < v2
@@ -172,18 +189,22 @@ class LineSegment < GeometryValue
       LineSegment.new(@x2,@y2,@x1,@y1)  
     end
   end
-  
   public
   def preprocess_prog
     close_x = real_close(@x1,@x2) 
-    close y = real_close(@y1,@y2)
+    close_y = real_close(@y1,@y2)
     case [close_x, close_y]
      when [true, true] then Point.new(@x1,@y1)
      when [true, false] then comp(@y1,@y2,self)
      when [false,false] then comp(@x1,@x2,comp(@y1,@y2,self))
      when [false,true] then comp(@x1,@x2,comp(@y1,@y2,self))
      end
-       
+  end
+  def eval_prog env 
+    self
+  end
+  def shift(dx,dy)
+    LineSegment.new(@x1+dx, @y1+dy, @x2+dx, @y2+dy)
   end
 end
 
@@ -207,9 +228,11 @@ class Let < GeometryExpression
     @e1 = e1
     @e2 = e2
   end
-  
   def preprocess_prog
     eval_prog(self,[]).preprocess_prog  # not sure if I will need self here
+  end
+  def eval_prog env
+    @e2.eval_prog([[@s, @e1]])
   end
 end
 
@@ -224,11 +247,9 @@ class Var < GeometryExpression
     raise "undefined variable" if pr.nil?
     pr[1]
   end
-  
   def preprocess_prog
     self
   end
-    
 end
 
 class Shift < GeometryExpression
@@ -239,10 +260,10 @@ class Shift < GeometryExpression
     @dy = dy
     @e = e
   end
-  
   def preprocess_prog
-    eval_prog(self,[]).preprocess_prog
+    eval_prog([]).preprocess_prog
   end
-  
-  
+  def eval_prog env
+    @e.shift(@dx,@dy)
+  end
 end
