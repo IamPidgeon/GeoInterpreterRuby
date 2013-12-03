@@ -35,18 +35,14 @@ a1 = a.shift(THREE,FIVE)
 if not (a1.x == SIX and a1.y == TEN)
 	puts "Point shift not working properly"
 end
-
-=begin
 a2 = a.intersect(Point.new(THREE,FIVE))
 if not (a2.x == THREE and a2.y == FIVE)
 	puts "Point intersect not working properly"
 end 
-
 a3 = a.intersect(Point.new(FOUR,FIVE))
 if not (a3.is_a? NoPoints)
 	puts "Point intersect not working properly"
 end
-=end
 
 #Line Tests
 b = Line.new(THREE,FIVE)

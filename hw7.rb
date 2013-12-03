@@ -62,8 +62,8 @@ class GeometryValue
 
   # we put this in this class so all subclasses can inhert it:
   # the intersection of self with a LineSegment is computed by
-  # first intersecting with the line containing the segment and then
-  # calling the result's intersectWithSegmentAsLineResult with the segment
+  # first intersecting with the line containing the segment which either returns a Point or NoPoints
+  # and then calling the result's intersectWithSegmentAsLineResult with the segment. This saves code. 
   def intersectLineSegment seg
     line_result = intersect(two_points_to_line(seg.x1,seg.y1,seg.x2,seg.y2))
     line_result.intersectWithSegmentAsLineResult seg
@@ -87,6 +87,9 @@ class NoPoints < GeometryValue
   end
   def intersect other
     other.intersectNoPoints self # will be NoPoints but follow double-dispatch
+  end
+  def intersectNoPoints other
+    self
   end
   def intersectPoint p
     self # intersection with point and no-points is no-points
@@ -128,6 +131,45 @@ class Point < GeometryValue
   end
   def shift(dx,dy)
     Point.new(@x+dx, @y+dy)
+  end
+  def intersect other
+    other.intersectPoint self
+  end
+  def intersectNoPoints other
+    other
+  end
+  def intersectPoint other
+    if real_close_point(@x,@y,other.x,other.y)
+      self
+    else
+      NoPoints.new
+    end
+  end
+  def intersectLine other
+    if real_close(@y, other.m * @x + other.b)
+      self
+    else
+      NoPoints.new
+    end
+  end
+  def inBetween(v,end1,end2)  # helper; checks if point v exists inside line segment.
+    epsilon = Epsilon::GeometryExpression
+    (end1 - epsilon <= v and v <= end2 + epsilon) or
+    (end2 - epsilon <= v and v <= end1 + epsilon) 
+  end
+  def intersectWithSegmentAsLineResult seg
+    if inBetween(@x,seg.x1,seg.x2) and inBetween(@y,seg.y1,seg.y2)
+      self
+    else
+      NoPoints.new
+    end
+  end  
+  def intersectVerticalLine other
+    if real_close(@x,other.x)
+      self
+    else 
+      NoPoints.new
+    end
   end
 end
 
@@ -216,6 +258,12 @@ class Intersect < GeometryExpression
   def initialize(e1,e2)
     @e1 = e1
     @e2 = e2
+  end
+  def preprocess_prog
+    (@e1.intersect @e2).preprocess_prog
+  end
+  def eval_prog env
+    (@e1.eval_prog env).intersect (@e2.eval_prog env)
   end
 end
 
