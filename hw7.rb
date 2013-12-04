@@ -101,8 +101,13 @@ class NoPoints < GeometryValue
   # do *not* change this class definition: everything is done for you
   # (although this is the easiest class, it shows what methods every subclass
   # of geometry values needs)
+  
+  # it would have been better to simply use .class in GeometryValue 
+  # but I had to avoid reflection for this assignment
+  # Additionally a Constant or even class variable would be preferable 
+  #but problematic for same reason
   def initialize
-    @dispatch = NoPoints    # it would have been better to simply use .class in GeometryValue but I had to avoid reflection for this assignment
+    @dispatch = NoPoints    
   end
   # Note: no initialize method only because there is nothing it needs to do
   def shift(dx,dy)
