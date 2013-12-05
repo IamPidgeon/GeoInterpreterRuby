@@ -3,47 +3,28 @@
 
 # a little language for 2D geometry objects
 
-# each subclass of GeometryExpression, including subclasses of GeometryValue,
-#  needs to respond to messages preprocess_prog and eval_prog
-#
-# each subclass of GeometryValue additionally needs:
-#   * shift
-#   * intersect, which uses the double-dispatch pattern
-#   * intersectPoint, intersectLine, and intersectVerticalLine for 
-#       for being called by intersect of appropriate clases and doing
-#       the correct intersection calculuation
-#   * (We would need intersectNoPoints and intersectLineSegment, but these
-#      are provided by GeometryValue and should not be overridden.)
-#   *  intersectWithSegmentAsLineResult, which is used by 
-#      intersectLineSegment as described in the assignment
-#
-# you can define other helper methods, but will not find much need to
-
 # Note: geometry objects should be immutable: assign to fields only during
 #       object construction
-
 # Note: For eval_prog, represent environments as arrays of 2-element arrays
-# as described in the assignment
 
+
+# the assignment structured this class as an abstract class
+# in my opinion, not necessary here
 class GeometryExpression  
-  # do *not* change this class definition
-  Epsilon = 0.00001
+  # Epsilon should really be in Geometry Value
+  # but the assignment structured it this way
+  Epsilon = 0.00001  
 end
 
 class GeometryValue 
-  # do *not* change methods in this class definition
-  # you can add methods if you wish
-
   private
-  # some helper methods that may be generally useful
   def real_close(r1,r2) 
       (r1 - r2).abs < GeometryExpression::Epsilon
   end
   def real_close_point(x1,y1,x2,y2) 
       real_close(x1,x2) && real_close(y1,y2)
   end
-  # two_points_to_line could return a Line or a VerticalLine
-  def two_points_to_line(x1,y1,x2,y2) 
+  def two_points_to_line(x1,y1,x2,y2) # could return a Line or a VerticalLine
       if real_close(x1,x2)
         VerticalLine.new x1
       else
@@ -53,24 +34,24 @@ class GeometryValue
       end
   end
   public
-  # we put this in this class so all subclasses can inherit it:
-  # the intersection of self with a NoPoints is a NoPoints object
   def intersectNoPoints np
-    np # could also have NoPoints.new here instead
+    np
   end
+  
+  # the below code looks up an instance variable in self which completes the method name.
   # it would have been better to simply use .class for @dispatch in GeometryValue 
   # but I had to avoid reflection for this assignment
   def intersect other
-    eval("other.intersect#{@dispatch} self")  
+    eval "other.intersect#{@dispatch} self"   
   end
   def intersectPoint other
-    eval("other.intersect#{@dispatch} self")
+    eval "other.intersect#{@dispatch} self"
   end
   def intersectLine other
-    eval("other.intersect#{@dispatch} self")
+    eval "other.intersect#{@dispatch} self" 
   end
   def intersectVerticalLine other
-    eval("other.intersect#{@dispatch} self")
+    eval "other.intersect#{@dispatch} self" 
   end
   def intersectWithSegmentAsLineResult seg
     seg
@@ -82,9 +63,10 @@ class GeometryValue
     self
   end
 
-  # we put this in this class so all subclasses can inhert it:
+  # look at the sml code/repo for a better idea of how this works
   # the intersection of self with a LineSegment is computed by
-  # first intersecting with the line containing the segment which either returns a Line, a Point, or NoPoints
+  # first intersecting with the line containing the segment 
+  # which either returns a Line, VerticalLine, a Point, or NoPoints
   # and then calling the result's intersectWithSegmentAsLineResult with the segment.
   def intersectLineSegment seg
     line_result = intersect(two_points_to_line(seg.x1,seg.y1,seg.x2,seg.y2))
@@ -97,37 +79,23 @@ class GeometryValue
   end
 end
 
-class NoPoints < GeometryValue
-  # do *not* change this class definition: everything is done for you
-  # (although this is the easiest class, it shows what methods every subclass
-  # of geometry values needs)
-  
+class NoPoints < GeometryValue  
   # it would have been better to simply use .class in GeometryValue 
   # but I had to avoid reflection for this assignment
   # Additionally a Constant or even class variable would be preferable 
-  #but problematic for same reason
+  # but problematic for same reason
   def initialize
     @dispatch = NoPoints    
   end
-  # Note: no initialize method only because there is nothing it needs to do
   def shift(dx,dy)
-    self # shifting no-points is no-points
+    self
   end
-  # if self is the intersection of (1) some shape s and (2) 
-  # the line containing seg, then we return the intersection of the 
-  # shape s and the seg.  seg is an instance of LineSegment
   def intersectWithSegmentAsLineResult seg
     self
   end
 end
 
-
 class Point < GeometryValue
-  # *add* methods to this class -- do *not* change given code and do not
-  # override any methods
-
-  # Note: You may want a private helper method like the local
-  # helper function inbetween in the ML code
   attr_reader :x, :y
   def initialize(x,y)
     @x = x
@@ -168,8 +136,6 @@ class Point < GeometryValue
 end
 
 class Line < GeometryValue
-  # *add* methods to this class -- do *not* change given code and do not
-  # override any methods
   attr_reader :m, :b 
   def initialize(m,b)
     @m = m
@@ -197,8 +163,6 @@ class Line < GeometryValue
 end
 
 class VerticalLine < GeometryValue
-  # *add* methods to this class -- do *not* change given code and do not
-  # override any methods
   attr_reader :x
   def initialize x
     @x = x
@@ -216,12 +180,7 @@ class VerticalLine < GeometryValue
   end
 end
 
-class LineSegment < GeometryValue
-  # *add* methods to this class -- do *not* change given code and do not
-  # override any methods
-  # Note: This is the most difficult class.  In the sample solution,
-  #  preprocess_prog is about 15 lines long and 
-  # intersectWithSegmentAsLineResult is about 40 lines long
+class LineSegment < GeometryValue  
   attr_reader :x1, :y1, :x2, :y2
   def initialize (x1,y1,x2,y2)
     @x1 = x1
@@ -304,12 +263,10 @@ class Let < GeometryExpression
 end
 
 class Var < GeometryExpression
-  # *add* methods to this class -- do *not* change given code and do not
-  # override any methods
   def initialize s
     @s = s
   end
-  def eval_prog env # remember: do not change this method
+  def eval_prog env
     pr = env.assoc @s
     raise "undefined variable" if pr.nil?
     pr[1]
@@ -320,8 +277,6 @@ class Var < GeometryExpression
 end
 
 class Shift < GeometryExpression
-  # *add* methods to this class -- do *not* change given code and do not
-  # override any methods
   def initialize(dx,dy,e)
     @dx = dx
     @dy = dy
