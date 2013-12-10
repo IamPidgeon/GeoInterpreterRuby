@@ -72,11 +72,6 @@ class GeometryValue
     line_result = intersect(two_points_to_line(seg.x1,seg.y1,seg.x2,seg.y2))
     line_result.intersectWithSegmentAsLineResult seg
   end
-  def inBetween(v,end1,end2)  # helper; checks if point v exists inside line segment.
-    epsilon = GeometryExpression::Epsilon
-    (end1 - epsilon <= v and v <= end2 + epsilon) or
-    (end2 - epsilon <= v and v <= end1 + epsilon) 
-  end
 end
 
 class NoPoints < GeometryValue  
@@ -119,6 +114,13 @@ class Point < GeometryValue
       NoPoints.new
     end
   end
+  private
+  def inBetween(v,end1,end2)  # helper; checks if point v exists inside line segment.
+    epsilon = GeometryExpression::Epsilon
+    (end1 - epsilon <= v and v <= end2 + epsilon) or
+    (end2 - epsilon <= v and v <= end1 + epsilon) 
+  end
+  public
   def intersectWithSegmentAsLineResult seg
     if inBetween(@x,seg.x1,seg.x2) and inBetween(@y,seg.y1,seg.y2)
       self
