@@ -42,16 +42,16 @@ class GeometryValue
   # it would have been better to simply use .class for @dispatch in GeometryValue 
   # but I had to avoid reflection for this assignment
   def intersect other
-    eval "other.intersect#{@dispatch} self"   
+    other.send("intersect#{@dispatch}", self)   
   end
   def intersectPoint other
-    eval "other.intersect#{@dispatch} self"
+    other.send("intersect#{@dispatch}", self)
   end
   def intersectLine other
-    eval "other.intersect#{@dispatch} self" 
+    other.send("intersect#{@dispatch}", self) 
   end
   def intersectVerticalLine other
-    eval "other.intersect#{@dispatch} self" 
+    other.send("intersect#{@dispatch}", self) 
   end
   def intersectWithSegmentAsLineResult seg
     seg
